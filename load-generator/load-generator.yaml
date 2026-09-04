@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: load-generator
+  namespace: default
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: load-generator
+
+  template:
+    metadata:
+      labels:
+        app: load-generator
+
+    spec:
+      containers:
+        - name: k6
+          image: grafana/k6:latest
+
+          command:
+            - /bin/sh
+            - -c
+
+          args:
+            - |
+              while true; do
+                k6 run /scripts/load-pattern.js
+              done
+
+          volumeMounts:
+            - name: load-script
+              mountPath: /scripts
+
+      volumes:
+        - name: load-script
+          configMap:
+            name: load-pattern-script
